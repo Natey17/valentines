@@ -24,7 +24,6 @@
       overflow:hidden;
     }
 
-    /* White square layer around the heart */
     .card{
       width:min(920px, 94vw);
       background:rgba(255,255,255,.92);
@@ -45,17 +44,20 @@
       isolation:isolate;
     }
 
+    /* Text now fits inside heart */
     .headline{
-      position:relative;
+      position:absolute;
       z-index:6;
       text-align:center;
-      font-size:clamp(28px, 4.2vw, 48px);
+      max-width:min(420px, 70%);
+      font-size:clamp(18px, 2.8vw, 30px);
       font-weight:950;
       letter-spacing:.2px;
-      padding:14px 16px;
+      line-height:1.1;
+      padding:12px 14px;
       background:rgba(255,255,255,.72);
       border:1px solid rgba(0,0,0,.08);
-      border-radius:22px;
+      border-radius:18px;
       backdrop-filter:blur(10px);
       color:var(--textDark);
     }
@@ -66,7 +68,6 @@
       z-index:3;
     }
 
-    /* Smaller tiles so the outline is dense and “touching” */
     .tile{
       position:absolute;
       width:clamp(30px, 4.1vw, 52px);
@@ -82,10 +83,55 @@
       will-change:left, top, transform, opacity;
     }
 
+    /* Buttons on left/right of heart */
+    .btn{
+      position:absolute;
+      z-index:7;
+      padding:12px 18px;
+      border-radius:16px;
+      border:1px solid rgba(0,0,0,.10);
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:0 16px 34px rgba(0,0,0,.18);
+      background:white;
+      color:var(--textDark);
+      user-select:none;
+      touch-action:manipulation;
+    }
+
+    #yesBtn{
+      left: min(34px, 4vw);
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    #noBtn{
+      right: min(34px, 4vw);
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    /* Small success text */
+    .result{
+      position:absolute;
+      z-index:8;
+      bottom:18px;
+      left:50%;
+      transform:translateX(-50%);
+      padding:10px 12px;
+      border-radius:14px;
+      background:rgba(255,255,255,.78);
+      border:1px solid rgba(0,0,0,.08);
+      font-weight:800;
+      display:none;
+    }
+
     @media (max-width:520px){
       .card{ padding:18px; }
       .heart-stage{ height:min(620px, 82vh); }
       .tile{ border-radius:12px; }
+      #yesBtn{ left: 12px; }
+      #noBtn{ right: 12px; }
     }
   </style>
 </head>
@@ -93,7 +139,13 @@
 <body>
   <main class="card">
     <div class="heart-stage" id="stage">
-      <div class="headline">Will you be my Valentine?</div>
+      <div class="headline" id="headline">Will you be my Valentine?</div>
+
+      <button class="btn" id="yesBtn">Yes 💗</button>
+      <button class="btn" id="noBtn">No 🙃</button>
+
+      <div class="result" id="result">YAY 💞 Screenshot this and send it to me 😌</div>
+
       <div class="orbit" id="orbit" aria-hidden="true"></div>
     </div>
   </main>
@@ -102,6 +154,9 @@
     (function heartMadeOfPhotos(){
       const stage = document.getElementById("stage");
       const orbit = document.getElementById("orbit");
+      const yesBtn = document.getElementById("yesBtn");
+      const noBtn = document.getElementById("noBtn");
+      const result = document.getElementById("result");
       if(!stage || !orbit) return;
 
       const sources = [
@@ -109,14 +164,13 @@
         "photos/image6.jpg","photos/image7.jpg","photos/image8.jpg","photos/image9.jpg","photos/image10.jpg"
       ];
 
-      // ---- CONFIG ----
-      const perSide = 20;         // 20 left + 20 right
-      const speed = 0.10;         // keep slow
-      const spawnToCurve = 0.22;  // center-stem feel
+      // CONFIG
+      const perSide = 20;
+      const speed = 0.10;
+      const spawnToCurve = 0.22;
       const fadeInEnd = 0.10;
       const fadeOutStart = 0.92;
-      const spacingTighten = 0.86; // slightly tighter so tiles “touch”
-      // ----------------
+      const spacingTighten = 0.86;
 
       const total = perSide * 2;
       const tiles = [];
@@ -146,24 +200,19 @@
         const cx = rect.width / 2;
         const cy = rect.height / 2;
 
-        // Tile size in px (used to shift everything up by one tile)
         const tileRect = tiles[0].getBoundingClientRect();
         const tileSize = Math.max(tileRect.width, 1);
 
-        // Base heart scaling
         const baseScale = Math.min(rect.width, rect.height) * 0.040;
         const scale = baseScale * spacingTighten;
 
-        // ORIGINAL: yOffset pushed heart down a bit.
-        // NOW: shift the entire system UP by ~1 tile:
-        const yOffset = (rect.height * 0.06) - tileSize;
+        // Move everything UP by TWO tiles total (one more than last time)
+        const yOffset = (rect.height * 0.06) - (tileSize * 2);
 
-        // Spawn point (where tiles "stem from") also moves UP by ~1 tile.
-        // This removes that bottom-most starting layer and makes them stem from the one above.
+        // Spawn point moved up (removes bottom-most "layer" and starts higher)
         const spawnX = cx;
         const spawnY = (cy + yOffset);
 
-        // Tighten touch slightly based on tile size
         const touchBoost = (tileSize / Math.min(rect.width, rect.height)) * 0.60;
         const effectiveScale = scale * (1 + touchBoost);
 
@@ -173,7 +222,7 @@
           const leftSide = i < perSide;
           const idxOnSide = leftSide ? i : (i - perSide);
 
-          let a = (tBase + idxOnSide / perSide) % 1;
+          const a = (tBase + idxOnSide / perSide) % 1;
 
           const dir = leftSide ? 1 : -1;
           const t = dir * (a * Math.PI);
@@ -203,6 +252,43 @@
       }
 
       requestAnimationFrame(tick);
+
+      // YES behavior
+      yesBtn.addEventListener("click", () => {
+        result.style.display = "block";
+        yesBtn.style.display = "none";
+        noBtn.style.display = "none";
+        document.getElementById("headline").textContent = "YAY 💞";
+      });
+
+      // NO dodges: works for mouse + touch
+      function dodge(){
+        const r = stage.getBoundingClientRect();
+
+        // keep it inside stage bounds with padding
+        const pad = 18;
+        const w = noBtn.offsetWidth;
+        const h = noBtn.offsetHeight;
+
+        const minX = pad;
+        const maxX = r.width - w - pad;
+        const minY = pad;
+        const maxY = r.height - h - pad;
+
+        // random new position
+        const x = minX + Math.random() * Math.max(1, (maxX - minX));
+        const y = minY + Math.random() * Math.max(1, (maxY - minY));
+
+        noBtn.style.left = `${x}px`;
+        noBtn.style.top = `${y}px`;
+        noBtn.style.right = "auto";
+        noBtn.style.transform = "none";
+        noBtn.style.position = "absolute";
+      }
+
+      noBtn.addEventListener("mouseenter", dodge);
+      noBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); dodge(); });
+
     })();
   </script>
 </body>
