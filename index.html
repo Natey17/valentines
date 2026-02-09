@@ -8,7 +8,6 @@
   <style>
     :root{
       --bg:#0b0b10;
-      --card:#141421;
       --text:#f6f6ff;
     }
 
@@ -24,7 +23,7 @@
     }
 
     .card{
-      width:min(860px, 94vw);
+      width:min(900px, 94vw);
       background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
       border:1px solid rgba(255,255,255,.12);
       border-radius:26px;
@@ -34,16 +33,17 @@
 
     .heart-stage{
       position:relative;
-      height:min(620px, 78vh);
+      height:min(650px, 80vh);
       display:grid;
       place-items:center;
       overflow:hidden;
       border-radius:22px;
+      isolation:isolate;
     }
 
     .headline{
       position:relative;
-      z-index:5;
+      z-index:6;
       text-align:center;
       font-size:clamp(28px, 4.2vw, 48px);
       font-weight:950;
@@ -55,17 +55,36 @@
       backdrop-filter:blur(10px);
     }
 
+    /* Heart outline layer (behind photos) */
+    .heart-lines{
+      position:absolute;
+      inset:0;
+      z-index:1;
+      pointer-events:none;
+      opacity:.95;
+      filter: drop-shadow(0 0 22px rgba(255,77,125,.25));
+    }
+
+    /* The stroke itself pulses via JS updating stroke opacity + glow */
+    .heart-path{
+      fill:none;
+      stroke: rgba(255,77,125,.55);
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Photos */
     .orbit{
       position:absolute;
       inset:0;
-      z-index:2;
+      z-index:3;
     }
 
-    /* Bigger photos */
     .orbit-img{
       position:absolute;
-      width:clamp(96px, 12vw, 160px);
-      height:clamp(96px, 12vw, 160px);
+      width:clamp(98px, 12.5vw, 170px);
+      height:clamp(98px, 12.5vw, 170px);
       border-radius:22px;
       object-fit:cover;
       transform:translate(-50%, -50%);
@@ -74,13 +93,14 @@
       user-select:none;
       pointer-events:none;
       opacity:0;
-      will-change: left, top, transform, opacity;
+      will-change:left, top, transform, opacity;
     }
 
     @media (max-width:520px){
       .orbit-img{ border-radius:18px; }
       .card{ padding:18px; }
-      .heart-stage{ height:min(560px, 78vh); }
+      .heart-stage{ height:min(600px, 80vh); }
+      .heart-path{ stroke-width:4; }
     }
   </style>
 </head>
@@ -89,6 +109,16 @@
   <main class="card">
     <div class="heart-stage" id="stage">
       <div class="headline">Will you be my Valentine?</div>
+
+      <!-- Heart outline (drawn behind photos, scaled in JS) -->
+      <svg class="heart-lines" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+        <path id="heartPath" class="heart-path"
+          d="M 500 740
+             C 260 590, 190 430, 280 320
+             C 360 225, 470 255, 500 340
+             C 530 255, 640 225, 720 320
+             C 810 430, 740 590, 500 740" />
+      </svg>
 
       <div class="orbit" id="orbit" aria-hidden="true">
         <img class="orbit-img" src="photos/image1.jpg"  alt="">
@@ -110,74 +140,60 @@
       const stage = document.getElementById("stage");
       const orbit = document.getElementById("orbit");
       const imgs = Array.from(orbit.querySelectorAll(".orbit-img"));
-      if(!stage || !orbit || imgs.length === 0) return;
+      const heartPath = document.getElementById("heartPath");
+      if(!stage || !orbit || imgs.length === 0 || !heartPath) return;
 
-      // Smoothstep helper
       function smoothstep(edge0, edge1, x){
         const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
         return t * t * (3 - 2 * t);
       }
 
-      // Classic heart curve (param t), returns x,y in "heart units"
+      // Classic heart curve for photo motion
       function heartXY(t){
         const x = 16 * Math.pow(Math.sin(t), 3);
         const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
         return { x, y };
       }
 
-      // Animation tuning
-      const speed = 0.26;          // higher = faster (cycles per second-ish)
-      const spawnToCurve = 0.14;   // portion of travel used to expand from center to the heart outline
-      const fadeInEnd = 0.10;      // fade in by this progress
-      const fadeOutStart = 0.82;   // start fading out near bottom
-      const bobAmt = 0.05;         // small scale pulse
+      // TUNING
+      const speed = 0.18;          // SLOWER than before
+      const spawnToCurve = 0.16;   // how quickly they expand from center
+      const fadeInEnd = 0.12;
+      const fadeOutStart = 0.84;
+      const bobAmt = 0.05;
 
       function tick(ms){
         const rect = stage.getBoundingClientRect();
         const cx = rect.width / 2;
         const cy = rect.height / 2;
 
-        // Scale heart to fit stage
+        // Scale heart for photo path
         const scale = Math.min(rect.width, rect.height) * 0.040;
 
-        // We want the bottom tip to be near lower-middle of stage.
-        // This offset nudges the heart down slightly.
+        // Nudge down so bottom tip is visible
         const yOffset = rect.height * 0.06;
 
-        const tBase = (ms * 0.001 * speed) % 1; // 0..1 loop
+        const tBase = (ms * 0.001 * speed) % 1;
 
         imgs.forEach((img, i) => {
-          // Stagger births so they "launch" from center one after another
-          const phase = i / imgs.length; // 0..1
-          let p = (tBase + phase) % 1;   // progress 0..1
+          const phase = i / imgs.length;
+          const a = (tBase + phase) % 1;
 
-          // Alternate directions: left side vs right side
-          // Left uses t from 0 -> +PI, Right uses 0 -> -PI
           const dir = (i % 2 === 0) ? 1 : -1;
-
-          // Travel parameter along half-heart (top -> bottom)
-          const a = p;                 // 0..1
           const t = dir * (a * Math.PI);
 
-          // Point on the heart outline
           const pt = heartXY(t);
-
-          // Convert to screen coords.
-          // Note: screen y increases downward, so subtract y.
           const hx = cx + pt.x * scale;
           const hy = (cy + yOffset) - pt.y * scale;
 
-          // Start from center, then expand out to outline near the beginning
-          const ramp = smoothstep(0, spawnToCurve, a); // 0..1
+          const ramp = smoothstep(0, spawnToCurve, a);
           const x = cx + (hx - cx) * ramp;
           const y = (cy + yOffset) + (hy - (cy + yOffset)) * ramp;
 
-          // Fade in near start, fade out near bottom
           const alphaIn = smoothstep(0, fadeInEnd, a);
           const alphaOut = 1 - smoothstep(fadeOutStart, 1, a);
           const alpha = Math.max(0, Math.min(1, alphaIn * alphaOut));
 
-          // Slight pulse so motion feels alive
           const pulse = 1 + bobAmt * Math.sin((a * Math.PI * 2) + i);
 
           img.style.left = `${x}px`;
@@ -185,6 +201,16 @@
           img.style.opacity = `${alpha}`;
           img.style.transform = `translate(-50%, -50%) scale(${pulse})`;
         });
+
+        // Heart outline pulse (light → dark) without blocking photos
+        // Opacity pulses, plus glow via CSS drop-shadow amount updated here.
+        const pulse = 0.5 + 0.5 * Math.sin(ms * 0.0018); // 0..1
+        const strokeAlpha = 0.25 + 0.55 * pulse;         // 0.25..0.80
+        const glow = 10 + 26 * pulse;                    // px
+
+        heartPath.style.stroke = `rgba(255,77,125,${strokeAlpha})`;
+        stage.querySelector(".heart-lines").style.filter =
+          `drop-shadow(0 0 ${glow}px rgba(255,77,125,${0.20 + 0.25*pulse}))`;
 
         requestAnimationFrame(tick);
       }
