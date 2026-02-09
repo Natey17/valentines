@@ -7,8 +7,9 @@
 
   <style>
     :root{
-      --bg:#0b0b10;
-      --text:#f6f6ff;
+      --bgPink1:#ffe1ea;
+      --bgPink2:#ffd2df;
+      --textDark:#1a1a22;
     }
 
     body{
@@ -16,19 +17,22 @@
       min-height:100vh;
       display:grid;
       place-items:center;
-      background:radial-gradient(1200px 800px at 20% 10%, #2a1533 0%, var(--bg) 55%, #0a1020 100%);
+      background:
+        radial-gradient(1200px 900px at 20% 10%, #fff7fa 0%, var(--bgPink1) 35%, var(--bgPink2) 100%);
       font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
+      color:var(--textDark);
       overflow:hidden;
     }
 
+    /* White square layer around the heart */
     .card{
       width:min(920px, 94vw);
-      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
-      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(0,0,0,.08);
       border-radius:26px;
       padding:26px;
-      box-shadow:0 30px 90px rgba(0,0,0,.55);
+      box-shadow:0 30px 90px rgba(0,0,0,.18);
+      backdrop-filter: blur(8px);
     }
 
     .heart-stage{
@@ -49,10 +53,11 @@
       font-weight:950;
       letter-spacing:.2px;
       padding:14px 16px;
-      background:rgba(20,20,33,.52);
-      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.72);
+      border:1px solid rgba(0,0,0,.08);
       border-radius:22px;
       backdrop-filter:blur(10px);
+      color:var(--textDark);
     }
 
     .orbit{
@@ -61,16 +66,16 @@
       z-index:3;
     }
 
-    /* Smaller, touchable tiles */
+    /* Smaller tiles so the outline is dense and “touching” */
     .tile{
       position:absolute;
-      width:clamp(34px, 4.4vw, 56px);
-      height:clamp(34px, 4.4vw, 56px);
+      width:clamp(30px, 4.1vw, 52px);
+      height:clamp(30px, 4.1vw, 52px);
       border-radius:14px;
       object-fit:cover;
       transform:translate(-50%, -50%);
-      border:1px solid rgba(255,255,255,.14);
-      box-shadow:0 10px 28px rgba(0,0,0,.45);
+      border:1px solid rgba(0,0,0,.08);
+      box-shadow:0 10px 26px rgba(0,0,0,.18);
       user-select:none;
       pointer-events:none;
       opacity:0;
@@ -99,24 +104,22 @@
       const orbit = document.getElementById("orbit");
       if(!stage || !orbit) return;
 
-      // Your 10 photos (reused / repeated)
       const sources = [
         "photos/image1.jpg","photos/image2.jpg","photos/image3.jpg","photos/image4.jpg","photos/image5.jpg",
         "photos/image6.jpg","photos/image7.jpg","photos/image8.jpg","photos/image9.jpg","photos/image10.jpg"
       ];
 
-      // ---- CONFIG YOU ASKED FOR ----
-      const perSide = 20;           // 20 left + 20 right visible
-      const speed = 0.10;           // slower flow
-      const spawnToCurve = 0.22;    // more time starting in the middle
+      // ---- CONFIG ----
+      const perSide = 20;         // 20 left + 20 right
+      const speed = 0.10;         // keep slow
+      const spawnToCurve = 0.22;  // center-stem feel
       const fadeInEnd = 0.10;
-      const fadeOutStart = 0.92;    // fade very late (near bottom tip)
-      const spacingTighten = 0.88;  // <1 = closer / touching; >1 = more spaced
-      // --------------------------------
+      const fadeOutStart = 0.92;
+      const spacingTighten = 0.86; // slightly tighter so tiles “touch”
+      // ----------------
 
-      // Create tiles (40 total)
-      const tiles = [];
       const total = perSide * 2;
+      const tiles = [];
 
       for(let i=0;i<total;i++){
         const img = document.createElement("img");
@@ -132,7 +135,6 @@
         return t * t * (3 - 2 * t);
       }
 
-      // Heart curve
       function heartXY(t){
         const x = 16 * Math.pow(Math.sin(t), 3);
         const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
@@ -144,61 +146,51 @@
         const cx = rect.width / 2;
         const cy = rect.height / 2;
 
-        // Base heart scale
-        const baseScale = Math.min(rect.width, rect.height) * 0.040;
-
-        // We will dynamically tighten spacing by slightly scaling the heart inward/outward
-        const scale = baseScale * spacingTighten;
-
-        const yOffset = rect.height * 0.06;
-
-        // Determine tile size in pixels (so we can make them "touch")
-        // (reads the computed size of the first tile)
+        // Tile size in px (used to shift everything up by one tile)
         const tileRect = tiles[0].getBoundingClientRect();
         const tileSize = Math.max(tileRect.width, 1);
 
-        // Convert tile size to a small offset along the curve by scaling the heart a bit
-        // This helps tiles touch rather than leaving gaps.
+        // Base heart scaling
+        const baseScale = Math.min(rect.width, rect.height) * 0.040;
+        const scale = baseScale * spacingTighten;
+
+        // ORIGINAL: yOffset pushed heart down a bit.
+        // NOW: shift the entire system UP by ~1 tile:
+        const yOffset = (rect.height * 0.06) - tileSize;
+
+        // Spawn point (where tiles "stem from") also moves UP by ~1 tile.
+        // This removes that bottom-most starting layer and makes them stem from the one above.
+        const spawnX = cx;
+        const spawnY = (cy + yOffset);
+
+        // Tighten touch slightly based on tile size
         const touchBoost = (tileSize / Math.min(rect.width, rect.height)) * 0.60;
         const effectiveScale = scale * (1 + touchBoost);
 
         const tBase = (ms * 0.001 * speed) % 1;
 
-        // Arrange 20 on left half-heart and 20 on right half-heart
         for(let i=0;i<total;i++){
-          const side = (i < perSide) ? "left" : "right";
-          const idxOnSide = (i < perSide) ? i : (i - perSide);
+          const leftSide = i < perSide;
+          const idxOnSide = leftSide ? i : (i - perSide);
 
-          // Progress 0..1 down the half-heart (top -> bottom)
-          // Stagger by index so they're spread along the outline,
-          // and add time-based drift so the chain "flows".
           let a = (tBase + idxOnSide / perSide) % 1;
 
-          // Map to half-heart: 0..PI for left, 0..-PI for right
-          const dir = (side === "left") ? 1 : -1;
+          const dir = leftSide ? 1 : -1;
           const t = dir * (a * Math.PI);
 
           const pt = heartXY(t);
 
-          // Outline point
           const hx = cx + pt.x * effectiveScale;
           const hy = (cy + yOffset) - pt.y * effectiveScale;
 
-          // Start at bottom-center "spawn point" (middle of heart)
-          const spawnX = cx;
-          const spawnY = cy + yOffset;
-
-          // Ease outward from center at the beginning of each loop
           const ramp = smoothstep(0, spawnToCurve, a);
           const x = spawnX + (hx - spawnX) * ramp;
           const y = spawnY + (hy - spawnY) * ramp;
 
-          // Fade in/out
           const alphaIn = smoothstep(0, fadeInEnd, a);
           const alphaOut = 1 - smoothstep(fadeOutStart, 1, a);
           const alpha = Math.max(0, Math.min(1, alphaIn * alphaOut));
 
-          // Tiny breathing pulse
           const pulse = 1 + 0.03 * Math.sin((a * Math.PI * 2) + i);
 
           tiles[i].style.left = `${x}px`;
