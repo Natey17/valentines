@@ -1,129 +1,250 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>💌</title>
-  <style>
-    :root { --bg:#0b0b10; --card:#141421; --text:#f6f6ff; --muted:#b9b9d6; }
-    body { margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(1200px 800px at 20% 10%, #2a1533 0%, var(--bg) 45%, #0a1020 100%); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; color:var(--text); }
-    .card { width:min(720px, 92vw); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.12); border-radius:24px; padding:28px; box-shadow:0 30px 80px rgba(0,0,0,.45); }
-    h1 { margin:0 0 6px; font-size:clamp(28px, 4vw, 44px); }
-    p { margin:10px 0; line-height:1.55; color:var(--muted); font-size:clamp(15px, 2.1vw, 18px); }
-    .row { display:flex; gap:12px; flex-wrap:wrap; margin-top:18px; }
-    button { border:0; border-radius:16px; padding:12px 16px; font-weight:700; cursor:pointer; }
-    #yes { background:#ff4d7d; color:white; }
-    #no { background:rgba(255,255,255,.10); color:var(--text); }
-    .footer { margin-top:18px; font-size:12px; color:rgba(255,255,255,.5); }
-    .hearts { position:fixed; inset:0; pointer-events:none; overflow:hidden; }
-    .heart { position:absolute; font-size:18px; opacity:.9; animation: floatUp linear forwards; }
-    @keyframes floatUp { from { transform: translateY(20px); opacity:0; } 10%{opacity:.9;} to { transform: translateY(-110vh); opacity:0; } }
-  </style>
-</head>
-<body>
-  <div class="hearts" id="hearts"></div>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💌</title>
 
-  <main class="card" aria-live="polite">
-    <h1 id="title">Hi, my love 💌</h1>
-    <p id="msg">
-      I made you a tiny little corner of the internet because you deserve cute things.
-      <br /><br />
-      Every day with you feels like the best part of the day.
-    </p>
+<style>
+
+:root {
+  --bg:#0b0b10;
+  --card:#141421;
+  --text:#f6f6ff;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  background:radial-gradient(circle at top, #2a1533, #0b0b10 60%);
+  font-family:system-ui, sans-serif;
+  color:var(--text);
+}
+
+.card{
+  width:min(760px,92vw);
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+  border-radius:24px;
+  padding:28px;
+  box-shadow:0 30px 80px rgba(0,0,0,.5);
+}
+
+.row{
+  margin-top:14px;
+  display:flex;
+  gap:12px;
+  justify-content:center;
+}
+
+button{
+  padding:12px 18px;
+  border:none;
+  border-radius:16px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+#reveal{ background:#ff4d7d; color:white; }
+#yes{ background:#ff4d7d; color:white; }
+#no{ background:#333; color:white; }
+
+.footer{
+  margin-top:16px;
+  text-align:center;
+  opacity:.7;
+  font-size:13px;
+}
+
+/* ---------- HEART STAGE ---------- */
+
+.heart-stage{
+  position:relative;
+  height:min(520px,70vh);
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+}
+
+.center-text{
+  position:relative;
+  z-index:5;
+  text-align:center;
+  padding:18px 20px;
+  background:rgba(20,20,33,.55);
+  border-radius:20px;
+  backdrop-filter:blur(8px);
+}
+
+.headline{
+  font-size:clamp(24px,4vw,38px);
+  font-weight:900;
+}
+
+/* ---------- ORBIT IMAGES ---------- */
+
+.orbit{
+  position:absolute;
+  inset:0;
+}
+
+.orbit-img{
+  position:absolute;
+  width:70px;
+  height:70px;
+  border-radius:16px;
+  object-fit:cover;
+  transform:translate(-50%,-50%);
+  box-shadow:0 12px 40px rgba(0,0,0,.5);
+}
+
+/* ---------- FLOATING HEARTS ---------- */
+
+.hearts{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+}
+
+.heart{
+  position:absolute;
+  font-size:20px;
+  animation:floatUp 5s linear forwards;
+}
+
+@keyframes floatUp{
+  from{ transform:translateY(0); opacity:0; }
+  10%{opacity:1;}
+  to{ transform:translateY(-110vh); opacity:0; }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="hearts" id="hearts"></div>
+
+<main class="card">
+
+<div class="heart-stage">
+
+  <div class="center-text">
+    <div class="headline">Will you be my Valentine?</div>
 
     <div class="row">
       <button id="reveal">Open the letter ✨</button>
       <button id="yes" style="display:none;">Yes 💗</button>
       <button id="no" style="display:none;">No 🙃</button>
     </div>
+  </div>
 
-    <p class="footer" id="hint">P.S. Click “Open the letter.”</p>
-  </main>
+  <div id="orbit" class="orbit">
+    <img class="orbit-img" src="photos/image1.jpg">
+    <img class="orbit-img" src="photos/image2.jpg">
+    <img class="orbit-img" src="photos/image3.jpg">
+    <img class="orbit-img" src="photos/image4.jpg">
+    <img class="orbit-img" src="photos/image5.jpg">
+    <img class="orbit-img" src="photos/image6.jpg">
+    <img class="orbit-img" src="photos/image7.jpg">
+    <img class="orbit-img" src="photos/image8.jpg">
+    <img class="orbit-img" src="photos/image9.jpg">
+    <img class="orbit-img" src="photos/image10.jpg">
+  </div>
+
+</div>
+
+<p id="msg" style="text-align:center;margin-top:14px;">
+I made you a tiny little corner of the internet because you deserve cute things.
+</p>
+
+<p class="footer" id="hint">P.S. The photos are moving in a heart 🫶</p>
+
+</main>
 
 <script>
-  const gfName = "your girlfriend's name";      // change
-  const yourName = "your name";                // change
-  const specialThing = "our thing (e.g., late-night drives, boba runs)"; // change
 
-  const titleEl = document.getElementById("title");
-  const msgEl = document.getElementById("msg");
-  const hintEl = document.getElementById("hint");
-  const revealBtn = document.getElementById("reveal");
-  const yesBtn = document.getElementById("yes");
-  const noBtn = document.getElementById("no");
+/* Floating background hearts */
+const hearts=document.getElementById("hearts");
+function popHearts(n=8){
+  for(let i=0;i<n;i++){
+    const h=document.createElement("div");
+    h.className="heart";
+    h.innerText=["💗","💖","💕","💘","💞"][Math.floor(Math.random()*5)];
+    h.style.left=Math.random()*100+"vw";
+    h.style.bottom="-20px";
+    h.style.fontSize=(14+Math.random()*20)+"px";
+    hearts.appendChild(h);
+    setTimeout(()=>h.remove(),5000);
+  }
+}
+setInterval(()=>popHearts(3),1800);
 
-  const hearts = document.getElementById("hearts");
-  function popHearts(count=18){
-    for(let i=0;i<count;i++){
-      const s = document.createElement("div");
-      s.className = "heart";
-      s.textContent = ["💗","💖","💘","💞","💕","❤️"][Math.floor(Math.random()*6)];
-      s.style.left = Math.random()*100 + "vw";
-      s.style.bottom = "-20px";
-      s.style.animationDuration = (3 + Math.random()*3) + "s";
-      s.style.fontSize = (14 + Math.random()*18) + "px";
-      hearts.appendChild(s);
-      setTimeout(()=>s.remove(), 7000);
-    }
+/* Heart orbit animation */
+(function(){
+  const orbit=document.getElementById("orbit");
+  const imgs=[...orbit.children];
+  const stage=document.querySelector(".heart-stage");
+
+  function heart(t){
+    return{
+      x:16*Math.pow(Math.sin(t),3),
+      y:13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t)
+    };
   }
 
-  // Optional: allow a secret query param like ?code=0214
-  const params = new URLSearchParams(location.search);
-  const code = params.get("code");
+  let start=performance.now();
 
-  let opened = false;
+  function animate(now){
+    const r=stage.getBoundingClientRect();
+    const cx=r.width/2;
+    const cy=r.height/2;
+    const scale=Math.min(r.width,r.height)*0.035;
+    const base=(now-start)*0.0006;
 
-  revealBtn.addEventListener("click", () => {
-    opened = true;
-    titleEl.textContent = `Dear ${gfName} 💌`;
-    msgEl.innerHTML = `
-      I love how you make ordinary moments feel special.
-      <br /><br />
-      My favorite is ${specialThing}.
-      <br /><br />
-      So here’s my Valentine’s proposal:
-      <br /><br />
-      <strong style="color:#fff;">Will you be my Valentine?</strong>
-    `;
-    revealBtn.style.display = "none";
-    yesBtn.style.display = "inline-block";
-    noBtn.style.display = "inline-block";
-    hintEl.textContent = (code ? `Code accepted: ${code} ✅` : "Pick carefully 🙂");
-    popHearts(26);
-  });
+    imgs.forEach((img,i)=>{
+      const t=base+i*(Math.PI*2/imgs.length);
+      const p=heart(t);
+      img.style.left=cx+p.x*scale+"px";
+      img.style.top =cy-p.y*scale+"px";
+    });
 
-  // Make "No" playfully dodge the cursor
-  noBtn.addEventListener("mouseenter", () => {
-    if(!opened) return;
-    const card = document.querySelector(".card");
-    const rect = card.getBoundingClientRect();
-    const x = Math.random() * (rect.width - 120);
-    const y = Math.random() * (rect.height - 60);
-    noBtn.style.position = "absolute";
-    noBtn.style.left = (rect.left + x) + "px";
-    noBtn.style.top = (rect.top + y) + "px";
-    popHearts(6);
-  });
+    requestAnimationFrame(animate);
+  }
 
-  yesBtn.addEventListener("click", () => {
-    titleEl.textContent = "YAY 💞";
-    msgEl.innerHTML = `
-      Best answer ever.
-      <br /><br />
-      Screenshot this and send it to me 😌
-      <br /><br />
-      <strong style="color:#fff;">Happy Valentine’s Day, ${gfName}.</strong>
-      <br /><br />
-      Love,<br />${yourName}
-    `;
-    yesBtn.style.display = "none";
-    noBtn.style.display = "none";
-    hintEl.textContent = "✅ Mission accomplished.";
-    popHearts(60);
-  });
+  animate();
+})();
 
-  // Small ambient hearts
-  setInterval(()=>popHearts(3), 1800);
+/* Buttons */
+
+const reveal=document.getElementById("reveal");
+const yes=document.getElementById("yes");
+const no=document.getElementById("no");
+const msg=document.getElementById("msg");
+
+reveal.onclick=()=>{
+  msg.innerHTML="<strong>Will you be my Valentine?</strong>";
+  reveal.style.display="none";
+  yes.style.display="inline-block";
+  no.style.display="inline-block";
+  popHearts(25);
+};
+
+yes.onclick=()=>{
+  msg.innerHTML="Best answer ever 💞<br>Happy Valentine’s Day ❤️";
+  yes.style.display="none";
+  no.style.display="none";
+  popHearts(60);
+};
+
+no.onmouseenter=()=>{
+  no.style.position="absolute";
+  no.style.left=Math.random()*80+"%";
+  no.style.top=Math.random()*80+"%";
+};
+
 </script>
+
 </body>
 </html>
