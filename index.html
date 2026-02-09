@@ -1,250 +1,196 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>💌</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>💌</title>
 
-<style>
+  <style>
+    :root{
+      --bg:#0b0b10;
+      --card:#141421;
+      --text:#f6f6ff;
+    }
 
-:root {
-  --bg:#0b0b10;
-  --card:#141421;
-  --text:#f6f6ff;
-}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      background:radial-gradient(1200px 800px at 20% 10%, #2a1533 0%, var(--bg) 55%, #0a1020 100%);
+      font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      overflow:hidden;
+    }
 
-body{
-  margin:0;
-  min-height:100vh;
-  display:grid;
-  place-items:center;
-  background:radial-gradient(circle at top, #2a1533, #0b0b10 60%);
-  font-family:system-ui, sans-serif;
-  color:var(--text);
-}
+    .card{
+      width:min(860px, 94vw);
+      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:26px;
+      padding:26px;
+      box-shadow:0 30px 90px rgba(0,0,0,.55);
+    }
 
-.card{
-  width:min(760px,92vw);
-  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
-  border-radius:24px;
-  padding:28px;
-  box-shadow:0 30px 80px rgba(0,0,0,.5);
-}
+    .heart-stage{
+      position:relative;
+      height:min(620px, 78vh);
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      border-radius:22px;
+    }
 
-.row{
-  margin-top:14px;
-  display:flex;
-  gap:12px;
-  justify-content:center;
-}
+    .headline{
+      position:relative;
+      z-index:5;
+      text-align:center;
+      font-size:clamp(28px, 4.2vw, 48px);
+      font-weight:950;
+      letter-spacing:.2px;
+      padding:16px 18px;
+      background:rgba(20,20,33,.52);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:22px;
+      backdrop-filter:blur(10px);
+    }
 
-button{
-  padding:12px 18px;
-  border:none;
-  border-radius:16px;
-  font-weight:700;
-  cursor:pointer;
-}
+    .orbit{
+      position:absolute;
+      inset:0;
+      z-index:2;
+    }
 
-#reveal{ background:#ff4d7d; color:white; }
-#yes{ background:#ff4d7d; color:white; }
-#no{ background:#333; color:white; }
+    /* Bigger photos */
+    .orbit-img{
+      position:absolute;
+      width:clamp(96px, 12vw, 160px);
+      height:clamp(96px, 12vw, 160px);
+      border-radius:22px;
+      object-fit:cover;
+      transform:translate(-50%, -50%);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:0 18px 55px rgba(0,0,0,.55);
+      user-select:none;
+      pointer-events:none;
+      opacity:0;
+      will-change: left, top, transform, opacity;
+    }
 
-.footer{
-  margin-top:16px;
-  text-align:center;
-  opacity:.7;
-  font-size:13px;
-}
-
-/* ---------- HEART STAGE ---------- */
-
-.heart-stage{
-  position:relative;
-  height:min(520px,70vh);
-  display:grid;
-  place-items:center;
-  overflow:hidden;
-}
-
-.center-text{
-  position:relative;
-  z-index:5;
-  text-align:center;
-  padding:18px 20px;
-  background:rgba(20,20,33,.55);
-  border-radius:20px;
-  backdrop-filter:blur(8px);
-}
-
-.headline{
-  font-size:clamp(24px,4vw,38px);
-  font-weight:900;
-}
-
-/* ---------- ORBIT IMAGES ---------- */
-
-.orbit{
-  position:absolute;
-  inset:0;
-}
-
-.orbit-img{
-  position:absolute;
-  width:70px;
-  height:70px;
-  border-radius:16px;
-  object-fit:cover;
-  transform:translate(-50%,-50%);
-  box-shadow:0 12px 40px rgba(0,0,0,.5);
-}
-
-/* ---------- FLOATING HEARTS ---------- */
-
-.hearts{
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-}
-
-.heart{
-  position:absolute;
-  font-size:20px;
-  animation:floatUp 5s linear forwards;
-}
-
-@keyframes floatUp{
-  from{ transform:translateY(0); opacity:0; }
-  10%{opacity:1;}
-  to{ transform:translateY(-110vh); opacity:0; }
-}
-
-</style>
+    @media (max-width:520px){
+      .orbit-img{ border-radius:18px; }
+      .card{ padding:18px; }
+      .heart-stage{ height:min(560px, 78vh); }
+    }
+  </style>
 </head>
 
 <body>
+  <main class="card">
+    <div class="heart-stage" id="stage">
+      <div class="headline">Will you be my Valentine?</div>
 
-<div class="hearts" id="hearts"></div>
-
-<main class="card">
-
-<div class="heart-stage">
-
-  <div class="center-text">
-    <div class="headline">Will you be my Valentine?</div>
-
-    <div class="row">
-      <button id="reveal">Open the letter ✨</button>
-      <button id="yes" style="display:none;">Yes 💗</button>
-      <button id="no" style="display:none;">No 🙃</button>
+      <div class="orbit" id="orbit" aria-hidden="true">
+        <img class="orbit-img" src="photos/image1.jpg"  alt="">
+        <img class="orbit-img" src="photos/image2.jpg"  alt="">
+        <img class="orbit-img" src="photos/image3.jpg"  alt="">
+        <img class="orbit-img" src="photos/image4.jpg"  alt="">
+        <img class="orbit-img" src="photos/image5.jpg"  alt="">
+        <img class="orbit-img" src="photos/image6.jpg"  alt="">
+        <img class="orbit-img" src="photos/image7.jpg"  alt="">
+        <img class="orbit-img" src="photos/image8.jpg"  alt="">
+        <img class="orbit-img" src="photos/image9.jpg"  alt="">
+        <img class="orbit-img" src="photos/image10.jpg" alt="">
+      </div>
     </div>
-  </div>
+  </main>
 
-  <div id="orbit" class="orbit">
-    <img class="orbit-img" src="photos/image1.jpg">
-    <img class="orbit-img" src="photos/image2.jpg">
-    <img class="orbit-img" src="photos/image3.jpg">
-    <img class="orbit-img" src="photos/image4.jpg">
-    <img class="orbit-img" src="photos/image5.jpg">
-    <img class="orbit-img" src="photos/image6.jpg">
-    <img class="orbit-img" src="photos/image7.jpg">
-    <img class="orbit-img" src="photos/image8.jpg">
-    <img class="orbit-img" src="photos/image9.jpg">
-    <img class="orbit-img" src="photos/image10.jpg">
-  </div>
+  <script>
+    (function streamHeart(){
+      const stage = document.getElementById("stage");
+      const orbit = document.getElementById("orbit");
+      const imgs = Array.from(orbit.querySelectorAll(".orbit-img"));
+      if(!stage || !orbit || imgs.length === 0) return;
 
-</div>
+      // Smoothstep helper
+      function smoothstep(edge0, edge1, x){
+        const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
+        return t * t * (3 - 2 * t);
+      }
 
-<p id="msg" style="text-align:center;margin-top:14px;">
-I made you a tiny little corner of the internet because you deserve cute things.
-</p>
+      // Classic heart curve (param t), returns x,y in "heart units"
+      function heartXY(t){
+        const x = 16 * Math.pow(Math.sin(t), 3);
+        const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+        return { x, y };
+      }
 
-<p class="footer" id="hint">P.S. The photos are moving in a heart 🫶</p>
+      // Animation tuning
+      const speed = 0.26;          // higher = faster (cycles per second-ish)
+      const spawnToCurve = 0.14;   // portion of travel used to expand from center to the heart outline
+      const fadeInEnd = 0.10;      // fade in by this progress
+      const fadeOutStart = 0.82;   // start fading out near bottom
+      const bobAmt = 0.05;         // small scale pulse
 
-</main>
+      function tick(ms){
+        const rect = stage.getBoundingClientRect();
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
 
-<script>
+        // Scale heart to fit stage
+        const scale = Math.min(rect.width, rect.height) * 0.040;
 
-/* Floating background hearts */
-const hearts=document.getElementById("hearts");
-function popHearts(n=8){
-  for(let i=0;i<n;i++){
-    const h=document.createElement("div");
-    h.className="heart";
-    h.innerText=["💗","💖","💕","💘","💞"][Math.floor(Math.random()*5)];
-    h.style.left=Math.random()*100+"vw";
-    h.style.bottom="-20px";
-    h.style.fontSize=(14+Math.random()*20)+"px";
-    hearts.appendChild(h);
-    setTimeout(()=>h.remove(),5000);
-  }
-}
-setInterval(()=>popHearts(3),1800);
+        // We want the bottom tip to be near lower-middle of stage.
+        // This offset nudges the heart down slightly.
+        const yOffset = rect.height * 0.06;
 
-/* Heart orbit animation */
-(function(){
-  const orbit=document.getElementById("orbit");
-  const imgs=[...orbit.children];
-  const stage=document.querySelector(".heart-stage");
+        const tBase = (ms * 0.001 * speed) % 1; // 0..1 loop
 
-  function heart(t){
-    return{
-      x:16*Math.pow(Math.sin(t),3),
-      y:13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t)
-    };
-  }
+        imgs.forEach((img, i) => {
+          // Stagger births so they "launch" from center one after another
+          const phase = i / imgs.length; // 0..1
+          let p = (tBase + phase) % 1;   // progress 0..1
 
-  let start=performance.now();
+          // Alternate directions: left side vs right side
+          // Left uses t from 0 -> +PI, Right uses 0 -> -PI
+          const dir = (i % 2 === 0) ? 1 : -1;
 
-  function animate(now){
-    const r=stage.getBoundingClientRect();
-    const cx=r.width/2;
-    const cy=r.height/2;
-    const scale=Math.min(r.width,r.height)*0.035;
-    const base=(now-start)*0.0006;
+          // Travel parameter along half-heart (top -> bottom)
+          const a = p;                 // 0..1
+          const t = dir * (a * Math.PI);
 
-    imgs.forEach((img,i)=>{
-      const t=base+i*(Math.PI*2/imgs.length);
-      const p=heart(t);
-      img.style.left=cx+p.x*scale+"px";
-      img.style.top =cy-p.y*scale+"px";
-    });
+          // Point on the heart outline
+          const pt = heartXY(t);
 
-    requestAnimationFrame(animate);
-  }
+          // Convert to screen coords.
+          // Note: screen y increases downward, so subtract y.
+          const hx = cx + pt.x * scale;
+          const hy = (cy + yOffset) - pt.y * scale;
 
-  animate();
-})();
+          // Start from center, then expand out to outline near the beginning
+          const ramp = smoothstep(0, spawnToCurve, a); // 0..1
+          const x = cx + (hx - cx) * ramp;
+          const y = (cy + yOffset) + (hy - (cy + yOffset)) * ramp;
 
-/* Buttons */
+          // Fade in near start, fade out near bottom
+          const alphaIn = smoothstep(0, fadeInEnd, a);
+          const alphaOut = 1 - smoothstep(fadeOutStart, 1, a);
+          const alpha = Math.max(0, Math.min(1, alphaIn * alphaOut));
 
-const reveal=document.getElementById("reveal");
-const yes=document.getElementById("yes");
-const no=document.getElementById("no");
-const msg=document.getElementById("msg");
+          // Slight pulse so motion feels alive
+          const pulse = 1 + bobAmt * Math.sin((a * Math.PI * 2) + i);
 
-reveal.onclick=()=>{
-  msg.innerHTML="<strong>Will you be my Valentine?</strong>";
-  reveal.style.display="none";
-  yes.style.display="inline-block";
-  no.style.display="inline-block";
-  popHearts(25);
-};
+          img.style.left = `${x}px`;
+          img.style.top  = `${y}px`;
+          img.style.opacity = `${alpha}`;
+          img.style.transform = `translate(-50%, -50%) scale(${pulse})`;
+        });
 
-yes.onclick=()=>{
-  msg.innerHTML="Best answer ever 💞<br>Happy Valentine’s Day ❤️";
-  yes.style.display="none";
-  no.style.display="none";
-  popHearts(60);
-};
+        requestAnimationFrame(tick);
+      }
 
-no.onmouseenter=()=>{
-  no.style.position="absolute";
-  no.style.left=Math.random()*80+"%";
-  no.style.top=Math.random()*80+"%";
-};
-
-</script>
-
+      requestAnimationFrame(tick);
+    })();
+  </script>
 </body>
 </html>
