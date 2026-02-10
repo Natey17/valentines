@@ -100,16 +100,17 @@
     }
 
     #yesBtn{
-      left: min(34px, 4vw);
-      top: 50%;
+      left: 18%;
+      top: 74%;
       transform: translateY(-50%);
     }
 
     #noBtn{
-      right: min(34px, 4vw);
-      top: 50%;
+      right: 18%;
+      top: 74%;
       transform: translateY(-50%);
     }
+
 
     /* Small success text */
     .result{
@@ -211,7 +212,7 @@
 
         // Spawn point moved up (removes bottom-most "layer" and starts higher)
         const spawnX = cx;
-        const spawnY = (cy + yOffset);
+        const spawnY = (cy + yOffset) - tileSize;
 
         const touchBoost = (tileSize / Math.min(rect.width, rect.height)) * 0.60;
         const effectiveScale = scale * (1 + touchBoost);
@@ -225,7 +226,8 @@
           const a = (tBase + idxOnSide / perSide) % 1;
 
           const dir = leftSide ? 1 : -1;
-          const t = dir * (a * Math.PI * 0.85);
+          const t = dir * (a * Math.PI);
+
 
           const pt = heartXY(t);
 
