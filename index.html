@@ -17,8 +17,7 @@
       min-height:100vh;
       display:grid;
       place-items:center;
-      background:
-        radial-gradient(1200px 900px at 20% 10%, #fff7fa 0%, var(--bgPink1) 35%, var(--bgPink2) 100%);
+      background: radial-gradient(1200px 900px at 20% 10%, #fff7fa 0%, var(--bgPink1) 35%, var(--bgPink2) 100%);
       font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color:var(--textDark);
       overflow:hidden;
@@ -44,22 +43,27 @@
       isolation:isolate;
     }
 
-    /* Text now fits inside heart */
+    /* Two-line centered text, no background */
     .headline{
       position:absolute;
       z-index:6;
       text-align:center;
-      max-width:min(420px, 70%);
-      font-size:clamp(18px, 2.8vw, 30px);
+      font-size:clamp(22px, 3.2vw, 34px);
+      line-height:1.05;
       font-weight:950;
       letter-spacing:.2px;
-      line-height:1.1;
-      padding:12px 14px;
-      background:rgba(255,255,255,.72);
-      border:1px solid rgba(0,0,0,.08);
-      border-radius:18px;
-      backdrop-filter:blur(10px);
+
+      top:50%;
+      left:50%;
+      transform:translate(-50%, -55%);
+
+      background:none;
+      border:none;
+      padding:0;
       color:var(--textDark);
+      pointer-events:none;
+      user-select:none;
+      text-transform:none;
     }
 
     .orbit{
@@ -83,7 +87,7 @@
       will-change:left, top, transform, opacity;
     }
 
-    /* Buttons on left/right of heart */
+    /* Buttons */
     .btn{
       position:absolute;
       z-index:7;
@@ -99,40 +103,93 @@
       touch-action:manipulation;
     }
 
+    /* Closer-in and near bottom meeting point */
     #yesBtn{
-      left: 18%;
-      top: 74%;
-      transform: translateY(-50%);
+      left:18%;
+      top:74%;
+      transform:translateY(-50%);
     }
 
     #noBtn{
-      right: 18%;
-      top: 74%;
-      transform: translateY(-50%);
+      right:18%;
+      top:74%;
+      transform:translateY(-50%);
     }
 
+    /* Reaction overlay layer */
+    .fx-layer{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:999;
+      overflow:hidden;
+    }
 
-    /* Small success text */
-    .result{
+    .fx{
       position:absolute;
-      z-index:8;
-      bottom:18px;
       left:50%;
-      transform:translateX(-50%);
-      padding:10px 12px;
-      border-radius:14px;
-      background:rgba(255,255,255,.78);
-      border:1px solid rgba(0,0,0,.08);
-      font-weight:800;
-      display:none;
+      top:50%;
+      transform:translate(-50%, -50%) rotate(var(--rot, 0deg));
+      width:min(70vmin, 520px);
+      height:auto;
+      border-radius:22px;
+      box-shadow:0 30px 90px rgba(0,0,0,.35);
+      border:1px solid rgba(0,0,0,.10);
+      opacity:0;
+      animation: fxIn 220ms ease-out forwards, fxOut 380ms ease-in forwards;
+      animation-delay: 0ms, 2620ms; /* total ~3s on screen */
+      will-change: transform, opacity;
+      background:white;
+    }
+
+    @keyframes fxIn{
+      from{ opacity:0; transform:translate(-50%, -50%) scale(.92) rotate(var(--rot,0deg)); }
+      to  { opacity:1; transform:translate(-50%, -50%) scale(1)   rotate(var(--rot,0deg)); }
+    }
+
+    @keyframes fxOut{
+      from{ opacity:1; transform:translate(-50%, -50%) scale(1) rotate(var(--rot,0deg)); }
+      to  { opacity:0; transform:translate(-50%, -50%) scale(.96) rotate(var(--rot,0deg)); }
+    }
+
+    /* Happy FX: 3 at once, spin a bit, then fade */
+    .happy{
+      position:absolute;
+      width:min(42vmin, 360px);
+      height:auto;
+      border-radius:22px;
+      box-shadow:0 30px 90px rgba(0,0,0,.35);
+      border:1px solid rgba(0,0,0,.10);
+      opacity:0;
+      animation: happyIn 260ms ease-out forwards, happySpin 1200ms ease-in-out forwards, happyOut 420ms ease-in forwards;
+      animation-delay: 0ms, 160ms, 2500ms; /* total ~3s */
+      will-change: transform, opacity;
+      background:white;
+    }
+
+    @keyframes happyIn{
+      from{ opacity:0; transform:translate(-50%, -50%) scale(.90) rotate(var(--rot,0deg)); }
+      to  { opacity:1; transform:translate(-50%, -50%) scale(1)   rotate(var(--rot,0deg)); }
+    }
+
+    @keyframes happySpin{
+      from{ transform:translate(-50%, -50%) scale(1) rotate(var(--rot,0deg)); }
+      to  { transform:translate(-50%, -50%) scale(1) rotate(calc(var(--rot,0deg) + 22deg)); }
+    }
+
+    @keyframes happyOut{
+      from{ opacity:1; transform:translate(-50%, -50%) scale(1) rotate(calc(var(--rot,0deg) + 22deg)); }
+      to  { opacity:0; transform:translate(-50%, -50%) scale(.96) rotate(calc(var(--rot,0deg) + 22deg)); }
     }
 
     @media (max-width:520px){
       .card{ padding:18px; }
       .heart-stage{ height:min(620px, 82vh); }
       .tile{ border-radius:12px; }
-      #yesBtn{ left: 12px; }
-      #noBtn{ right: 12px; }
+      #yesBtn{ left:20%; }
+      #noBtn{ right:20%; }
+      .fx{ width:min(78vmin, 520px); border-radius:18px; }
+      .happy{ width:min(52vmin, 360px); border-radius:18px; }
     }
   </style>
 </head>
@@ -140,38 +197,47 @@
 <body>
   <main class="card">
     <div class="heart-stage" id="stage">
-      <div class="headline" id="headline">Will you be my Valentine?</div>
+      <div class="headline" id="headline">
+        Will you be<br>
+        my valentine?
+      </div>
 
       <button class="btn" id="yesBtn">Yes 💗</button>
       <button class="btn" id="noBtn">No 🙃</button>
-
-      <div class="result" id="result">YAY 💞 Screenshot this and send it to me 😌</div>
 
       <div class="orbit" id="orbit" aria-hidden="true"></div>
     </div>
   </main>
 
+  <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+
   <script>
-    (function heartMadeOfPhotos(){
+    (function(){
       const stage = document.getElementById("stage");
       const orbit = document.getElementById("orbit");
       const yesBtn = document.getElementById("yesBtn");
-      const noBtn = document.getElementById("noBtn");
-      const result = document.getElementById("result");
-      if(!stage || !orbit) return;
+      const noBtn  = document.getElementById("noBtn");
+      const headline = document.getElementById("headline");
+      const fxLayer = document.getElementById("fxLayer");
+      if(!stage || !orbit || !yesBtn || !noBtn || !headline || !fxLayer) return;
 
+      // Reuse your 10 images for the heart tiles
       const sources = [
         "photos/image1.jpg","photos/image2.jpg","photos/image3.jpg","photos/image4.jpg","photos/image5.jpg",
         "photos/image6.jpg","photos/image7.jpg","photos/image8.jpg","photos/image9.jpg","photos/image10.jpg"
       ];
 
-      // CONFIG
-      const perSide = 20;
-      const speed = 0.10;
-      const spawnToCurve = 0.22;
+      // Heart tiles config
+      const perSide = 20;          // 20 left + 20 right
+      const speed = 0.10;          // slow flow
+      const spawnToCurve = 0.22;   // linger near spawn
       const fadeInEnd = 0.10;
       const fadeOutStart = 0.92;
       const spacingTighten = 0.86;
+
+      // Remove bottom-most 1–2 layers by truncating the curve near the bottom
+      // (0.90 removes ~1, 0.85 removes ~2)
+      const curveCut = 0.85;
 
       const total = perSide * 2;
       const tiles = [];
@@ -204,15 +270,16 @@
         const tileRect = tiles[0].getBoundingClientRect();
         const tileSize = Math.max(tileRect.width, 1);
 
-        const baseScale = Math.min(rect.width, rect.height) * 0.035;
+        // Heart scale
+        const baseScale = Math.min(rect.width, rect.height) * 0.040;
         const scale = baseScale * spacingTighten;
 
-        // Move everything UP by TWO tiles total (one more than last time)
-        const yOffset = (rect.height * 0.06) - (tileSize * 2);
+        // Spawn/whole system up: (you previously moved up a lot)
+        // Keeping it high so the heart stays visible.
+        const yOffset = (rect.height * 0.06) - (tileSize * 4);
 
-        // Spawn point moved up (removes bottom-most "layer" and starts higher)
         const spawnX = cx;
-        const spawnY = (cy + yOffset) - tileSize;
+        const spawnY = (cy + yOffset);
 
         const touchBoost = (tileSize / Math.min(rect.width, rect.height)) * 0.60;
         const effectiveScale = scale * (1 + touchBoost);
@@ -226,8 +293,9 @@
           const a = (tBase + idxOnSide / perSide) % 1;
 
           const dir = leftSide ? 1 : -1;
-          const t = dir * (a * Math.PI);
 
+          // Use only the top part of the heart so the bottom layers are gone
+          const t = dir * (a * Math.PI * curveCut);
 
           const pt = heartXY(t);
 
@@ -255,20 +323,74 @@
 
       requestAnimationFrame(tick);
 
-      // YES behavior
+      // ---------- Reaction images helpers ----------
+      // Will try .jpg first, then fall back to .png automatically.
+      function setSrcWithFallback(imgEl, baseName){
+        imgEl.src = `photos/${baseName}.jpg`;
+        imgEl.onerror = () => {
+          imgEl.onerror = null;
+          imgEl.src = `photos/${baseName}.png`;
+        };
+      }
+
+      function showNoReaction(which){
+        const img = document.createElement("img");
+        img.className = "fx";
+        img.style.setProperty("--rot", `${(-6 + Math.random()*12).toFixed(1)}deg`);
+        setSrcWithFallback(img, `reactionImage${which}`);
+
+        fxLayer.appendChild(img);
+
+        // Remove after animation completes (~3.1s)
+        setTimeout(() => img.remove(), 3300);
+      }
+
+      function showHappyTrio(){
+        const positions = [
+          { left:"32%", top:"44%", rot:"-10deg" },
+          { left:"50%", top:"38%", rot:"8deg" },
+          { left:"68%", top:"46%", rot:"-2deg" }
+        ];
+
+        for(let i=1;i<=3;i++){
+          const img = document.createElement("img");
+          img.className = "happy";
+          img.style.left = positions[i-1].left;
+          img.style.top  = positions[i-1].top;
+          img.style.setProperty("--rot", positions[i-1].rot);
+
+          // translate(-50%, -50%) is baked into animations; we keep it consistent:
+          img.style.transform = `translate(-50%, -50%) rotate(${positions[i-1].rot})`;
+
+          setSrcWithFallback(img, `happyImage${i}`);
+          fxLayer.appendChild(img);
+
+          setTimeout(() => img.remove(), 3300);
+        }
+      }
+
+      // ---------- Button behaviors ----------
+      let noClicks = 0;
+      let locked = false;
+
       yesBtn.addEventListener("click", () => {
-        result.style.display = "block";
+        if(locked) return;
+        locked = true;
+
+        // Happy reactions
+        showHappyTrio();
+
+        // Replace center text
+        headline.innerHTML = "YAY 💞<br>Happy Valentine’s Day";
         yesBtn.style.display = "none";
         noBtn.style.display = "none";
-        document.getElementById("headline").textContent = "YAY 💞";
       });
 
-      // NO dodges: works for mouse + touch
-      function dodge(){
+      // No button dodges hover/touch, but if she actually clicks it, show reactions
+      function dodgeNo(){
         const r = stage.getBoundingClientRect();
-
-        // keep it inside stage bounds with padding
         const pad = 18;
+
         const w = noBtn.offsetWidth;
         const h = noBtn.offsetHeight;
 
@@ -277,19 +399,30 @@
         const minY = pad;
         const maxY = r.height - h - pad;
 
-        // random new position
         const x = minX + Math.random() * Math.max(1, (maxX - minX));
         const y = minY + Math.random() * Math.max(1, (maxY - minY));
 
+        noBtn.style.position = "absolute";
         noBtn.style.left = `${x}px`;
         noBtn.style.top = `${y}px`;
         noBtn.style.right = "auto";
         noBtn.style.transform = "none";
-        noBtn.style.position = "absolute";
       }
 
-      noBtn.addEventListener("mouseenter", dodge);
-      noBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); dodge(); });
+      noBtn.addEventListener("mouseenter", dodgeNo);
+      noBtn.addEventListener("pointerdown", (e) => {
+        // Dodge on touch attempts too
+        e.preventDefault();
+        dodgeNo();
+      });
+
+      // If she manages to click "No" anyway: cycle reactionImage1..3 for 3 seconds each
+      noBtn.addEventListener("click", () => {
+        if(locked) return;
+        noClicks++;
+        const which = ((noClicks - 1) % 3) + 1;
+        showNoReaction(which);
+      });
 
     })();
   </script>
