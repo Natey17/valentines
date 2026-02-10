@@ -233,7 +233,7 @@
       const spacingTighten = 0.86;
 
       // Cut off the bottom a bit (removes lowest layers)
-      const curveCut = 0.85;
+      const curveCut = 1;
 
       // Vertical placement (this is the “perfect before” value you last reverted to)
       const yOffsetTileMultiplier = 2;
@@ -275,7 +275,7 @@
         const yOffset = (rect.height * 0.06) - (tileSize * yOffsetTileMultiplier);
 
         const spawnX = cx;
-        const spawnY = (cy + yOffset);
+        const spawnY = (cy + yOffset) - tileSize;
 
         const touchBoost = (tileSize / Math.min(rect.width, rect.height)) * 0.60;
         const effectiveScale = scale * (1 + touchBoost);
