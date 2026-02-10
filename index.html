@@ -203,7 +203,7 @@
         const tileRect = tiles[0].getBoundingClientRect();
         const tileSize = Math.max(tileRect.width, 1);
 
-        const baseScale = Math.min(rect.width, rect.height) * 0.040;
+        const baseScale = Math.min(rect.width, rect.height) * 0.035;
         const scale = baseScale * spacingTighten;
 
         // Move everything UP by TWO tiles total (one more than last time)
@@ -225,7 +225,7 @@
           const a = (tBase + idxOnSide / perSide) % 1;
 
           const dir = leftSide ? 1 : -1;
-          const t = dir * (a * Math.PI);
+          const t = dir * (a * Math.PI * 0.85);
 
           const pt = heartXY(t);
 
