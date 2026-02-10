@@ -402,36 +402,46 @@
       function rand(min, max){ return min + Math.random() * (max - min); }
 
       function showHappyTrioRandom(){
+  const headline = document.getElementById("headline");
+  const rect = headline.getBoundingClientRect();
 
-        const zones = [
-        { x:[18,35], y:[25,45] },  // left area
-        { x:[40,60], y:[15,35] },  // top-middle area
-        { x:[65,82], y:[35,55] }   // right area
-      ];
+  // Anchor points around the headline (in viewport coords)
+  const points = [
+    { x: rect.left - rect.width * 0.55, y: rect.top + rect.height * 0.55 }, // left
+    { x: rect.left + rect.width * 0.50, y: rect.top - rect.height * 0.85 }, // top
+    { x: rect.right + rect.width * 0.55, y: rect.top + rect.height * 0.55 } // right
+  ];
 
-      for(let i=1;i<=3;i++){
+    // Clamp to stay on screen
+    function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+
+    for(let i=1;i<=3;i++){
       const happy = createLoadedImg(`happyImage${i}`);
       happy.className = "happy";
 
-      const zone = zones[i-1];
+      const p = points[i-1];
 
-      const x = rand(zone.x[0], zone.x[1]);
-      const y = rand(zone.y[0], zone.y[1]);
+      // Convert px to % for CSS positioning
+      const pxX = clamp(p.x, 80, window.innerWidth - 80);
+      const pxY = clamp(p.y, 80, window.innerHeight - 80);
 
-      happy.style.left = `${x}%`;
-      happy.style.top  = `${y}%`;
+      happy.style.left = `${(pxX / window.innerWidth) * 100}%`;
+      happy.style.top  = `${(pxY / window.innerHeight) * 100}%`;
 
-      const rot = rand(-18, 18).toFixed(1) + "deg";
-      happy.style.setProperty("--rot", rot);
-
+      // Big-ish size
       const base = Math.min(window.innerWidth, window.innerHeight);
-      const px = Math.max(240, Math.min(420, base * rand(0.30, 0.42)));
+      const px = Math.max(240, Math.min(420, base * (0.34 + Math.random()*0.06)));
       happy.style.width = `${px}px`;
+
+      // Small rotation variety
+      const rot = (-14 + Math.random()*28).toFixed(1) + "deg";
+      happy.style.setProperty("--rot", rot);
 
       fxLayer.appendChild(happy);
       setTimeout(() => happy.remove(), 3300);
     }
   }
+
 
 
       let locked = false;
