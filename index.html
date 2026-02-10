@@ -136,7 +136,7 @@
       border:1px solid rgba(0,0,0,.10);
       opacity:0;
       animation: fxIn 220ms ease-out forwards, fxOut 420ms ease-in forwards;
-      animation-delay: 0ms, 2600ms; /* total ~3s */
+      animation-delay: 0ms, 1200ms;
       will-change: transform, opacity;
       background:white;
     }
@@ -349,7 +349,7 @@
         fx.className = "fx";
         fx.style.setProperty("--rot", `${(-6 + Math.random()*12).toFixed(1)}deg`);
         fxLayer.appendChild(fx);
-        setTimeout(() => fx.remove(), 3300);
+        setTimeout(() => fx.remove(), 1650);
       }
 
       function dodgeNo(){
@@ -397,33 +397,37 @@
       function rand(min, max){ return min + Math.random() * (max - min); }
 
       function showHappyTrioRandom(){
-        const w = window.innerWidth;
-        const h = window.innerHeight;
 
-        for(let i=1;i<=3;i++){
-          const happy = createLoadedImg(`happyImage${i}`);
-          happy.className = "happy";
+        const zones = [
+        { x:[18,35], y:[25,45] },  // left area
+        { x:[40,60], y:[15,35] },  // top-middle area
+        { x:[65,82], y:[35,55] }   // right area
+      ];
 
-          // random position, keep within bounds
-          const x = rand(18, 82); // percent
-          const y = rand(18, 82); // percent
-          happy.style.left = `${x}%`;
-          happy.style.top  = `${y}%`;
+      for(let i=1;i<=3;i++){
+      const happy = createLoadedImg(`happyImage${i}`);
+      happy.className = "happy";
 
-          // random rotation and a little size variation
-          const rot = rand(-18, 18).toFixed(1) + "deg";
-          happy.style.setProperty("--rot", rot);
+      const zone = zones[i-1];
 
-          // random size scaling via CSS transform baseline baked into animations;
-          // easiest is to vary width:
-          const base = Math.min(w, h);
-          const px = Math.max(220, Math.min(420, base * rand(0.28, 0.42)));
-          happy.style.width = `${px}px`;
+      const x = rand(zone.x[0], zone.x[1]);
+      const y = rand(zone.y[0], zone.y[1]);
 
-          fxLayer.appendChild(happy);
-          setTimeout(() => happy.remove(), 3300);
-        }
-      }
+      happy.style.left = `${x}%`;
+      happy.style.top  = `${y}%`;
+
+      const rot = rand(-18, 18).toFixed(1) + "deg";
+      happy.style.setProperty("--rot", rot);
+
+      const base = Math.min(window.innerWidth, window.innerHeight);
+      const px = Math.max(240, Math.min(420, base * rand(0.30, 0.42)));
+      happy.style.width = `${px}px`;
+
+      fxLayer.appendChild(happy);
+      setTimeout(() => happy.remove(), 3300);
+    }
+  }
+
 
       let locked = false;
       yesBtn.addEventListener("click", () => {
