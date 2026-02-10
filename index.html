@@ -387,8 +387,13 @@
 
       noBtn.addEventListener("click", () => {
         noClicks++;
+
+        // 1) show reactionImage1 -> 2 -> 3 -> repeat
         const which = ((noClicks - 1) % 3) + 1;
         showNoReaction(which);
+
+        // 2) move the NO button after every click
+        dodgeNo();
       });
 
       // ---------- YES behavior ----------
