@@ -63,7 +63,6 @@
       color:var(--textDark);
       pointer-events:none;
       user-select:none;
-      text-transform:none;
     }
 
     .orbit{
@@ -87,7 +86,6 @@
       will-change:left, top, transform, opacity;
     }
 
-    /* Buttons */
     .btn{
       position:absolute;
       z-index:7;
@@ -125,19 +123,20 @@
       overflow:hidden;
     }
 
+    /* Single “No” reaction: big center, ~3s then fade */
     .fx{
       position:absolute;
       left:50%;
       top:50%;
       transform:translate(-50%, -50%) rotate(var(--rot, 0deg));
-      width:min(70vmin, 520px);
+      width:min(74vmin, 560px);
       height:auto;
       border-radius:22px;
       box-shadow:0 30px 90px rgba(0,0,0,.35);
       border:1px solid rgba(0,0,0,.10);
       opacity:0;
-      animation: fxIn 220ms ease-out forwards, fxOut 380ms ease-in forwards;
-      animation-delay: 0ms, 2620ms; /* total ~3s on screen */
+      animation: fxIn 220ms ease-out forwards, fxOut 420ms ease-in forwards;
+      animation-delay: 0ms, 2600ms; /* total ~3s */
       will-change: transform, opacity;
       background:white;
     }
@@ -152,34 +151,32 @@
       to  { opacity:0; transform:translate(-50%, -50%) scale(.96) rotate(var(--rot,0deg)); }
     }
 
-    /* Happy FX: 3 at once, spin a bit, then fade */
+    /* “Yes” reactions: 3 images, random positions, spin + fade */
     .happy{
       position:absolute;
-      width:min(42vmin, 360px);
+      width:min(42vmin, 380px);
       height:auto;
       border-radius:22px;
       box-shadow:0 30px 90px rgba(0,0,0,.35);
       border:1px solid rgba(0,0,0,.10);
       opacity:0;
-      animation: happyIn 260ms ease-out forwards, happySpin 1200ms ease-in-out forwards, happyOut 420ms ease-in forwards;
-      animation-delay: 0ms, 160ms, 2500ms; /* total ~3s */
-      will-change: transform, opacity;
+      will-change: transform, opacity, left, top;
       background:white;
+      animation: happyIn 260ms ease-out forwards, happySpin 1200ms ease-in-out forwards, happyOut 420ms ease-in forwards;
+      animation-delay: 0ms, 140ms, 2500ms; /* total ~3s */
     }
 
     @keyframes happyIn{
       from{ opacity:0; transform:translate(-50%, -50%) scale(.90) rotate(var(--rot,0deg)); }
       to  { opacity:1; transform:translate(-50%, -50%) scale(1)   rotate(var(--rot,0deg)); }
     }
-
     @keyframes happySpin{
       from{ transform:translate(-50%, -50%) scale(1) rotate(var(--rot,0deg)); }
-      to  { transform:translate(-50%, -50%) scale(1) rotate(calc(var(--rot,0deg) + 22deg)); }
+      to  { transform:translate(-50%, -50%) scale(1) rotate(calc(var(--rot,0deg) + 28deg)); }
     }
-
     @keyframes happyOut{
-      from{ opacity:1; transform:translate(-50%, -50%) scale(1) rotate(calc(var(--rot,0deg) + 22deg)); }
-      to  { opacity:0; transform:translate(-50%, -50%) scale(.96) rotate(calc(var(--rot,0deg) + 22deg)); }
+      from{ opacity:1; transform:translate(-50%, -50%) scale(1) rotate(calc(var(--rot,0deg) + 28deg)); }
+      to  { opacity:0; transform:translate(-50%, -50%) scale(.96) rotate(calc(var(--rot,0deg) + 28deg)); }
     }
 
     @media (max-width:520px){
@@ -188,8 +185,8 @@
       .tile{ border-radius:12px; }
       #yesBtn{ left:20%; }
       #noBtn{ right:20%; }
-      .fx{ width:min(78vmin, 520px); border-radius:18px; }
-      .happy{ width:min(52vmin, 360px); border-radius:18px; }
+      .fx{ width:min(84vmin, 560px); border-radius:18px; }
+      .happy{ width:min(54vmin, 380px); border-radius:18px; }
     }
   </style>
 </head>
@@ -221,7 +218,7 @@
       const fxLayer = document.getElementById("fxLayer");
       if(!stage || !orbit || !yesBtn || !noBtn || !headline || !fxLayer) return;
 
-      // Reuse your 10 images for the heart tiles
+      // Heart tile images (your 10)
       const sources = [
         "photos/image1.jpg","photos/image2.jpg","photos/image3.jpg","photos/image4.jpg","photos/image5.jpg",
         "photos/image6.jpg","photos/image7.jpg","photos/image8.jpg","photos/image9.jpg","photos/image10.jpg"
@@ -229,19 +226,21 @@
 
       // Heart tiles config
       const perSide = 20;          // 20 left + 20 right
-      const speed = 0.10;          // slow flow
-      const spawnToCurve = 0.22;   // linger near spawn
+      const speed = 0.10;
+      const spawnToCurve = 0.22;
       const fadeInEnd = 0.10;
       const fadeOutStart = 0.92;
       const spacingTighten = 0.86;
 
-      // Remove bottom-most 1–2 layers by truncating the curve near the bottom
-      // (0.90 removes ~1, 0.85 removes ~2)
+      // Cut off the bottom a bit (removes lowest layers)
       const curveCut = 0.85;
 
+      // Vertical placement (this is the “perfect before” value you last reverted to)
+      const yOffsetTileMultiplier = 2;
+
+      // Build tiles
       const total = perSide * 2;
       const tiles = [];
-
       for(let i=0;i<total;i++){
         const img = document.createElement("img");
         img.className = "tile";
@@ -270,13 +269,10 @@
         const tileRect = tiles[0].getBoundingClientRect();
         const tileSize = Math.max(tileRect.width, 1);
 
-        // Heart scale
         const baseScale = Math.min(rect.width, rect.height) * 0.040;
         const scale = baseScale * spacingTighten;
 
-        // Spawn/whole system up: (you previously moved up a lot)
-        // Keeping it high so the heart stays visible.
-        const yOffset = (rect.height * 0.06) - (tileSize * 2);
+        const yOffset = (rect.height * 0.06) - (tileSize * yOffsetTileMultiplier);
 
         const spawnX = cx;
         const spawnY = (cy + yOffset);
@@ -289,12 +285,9 @@
         for(let i=0;i<total;i++){
           const leftSide = i < perSide;
           const idxOnSide = leftSide ? i : (i - perSide);
-
           const a = (tBase + idxOnSide / perSide) % 1;
 
           const dir = leftSide ? 1 : -1;
-
-          // Use only the top part of the heart so the bottom layers are gone
           const t = dir * (a * Math.PI * curveCut);
 
           const pt = heartXY(t);
@@ -323,70 +316,42 @@
 
       requestAnimationFrame(tick);
 
-      // ---------- Reaction images helpers ----------
-      // Will try .jpg first, then fall back to .png automatically.
-      function setSrcWithFallback(imgEl, baseName){
-        imgEl.src = `photos/${baseName}.jpg`;
-        imgEl.onerror = () => {
-          imgEl.onerror = null;
-          imgEl.src = `photos/${baseName}.png`;
+      // ---------- Reaction image loader (tries common extensions) ----------
+      const EXT_TRY = ["png","jpg","jpeg","webp","gif"];
+
+      function createLoadedImg(baseName){
+        const img = document.createElement("img");
+        let idx = 0;
+
+        const tryNext = () => {
+          if(idx >= EXT_TRY.length){
+            // If none load, remove (so it doesn't sit broken)
+            img.remove();
+            return;
+          }
+          img.src = `photos/${baseName}.${EXT_TRY[idx++]}`;
         };
+
+        img.onerror = tryNext;
+        tryNext();
+        return img;
       }
+
+      // ---------- NO behavior ----------
+      // You said: No should NOT move until you've tried to click it.
+      // On each click: show reactionImage1..3 (center) for ~3 seconds.
+      // After N clicks, start dodging.
+      let noClicks = 0;
+      const startDodgingAfterClicks = 2; // change to 0 for immediate dodge, 999 for never
 
       function showNoReaction(which){
-        const img = document.createElement("img");
-        img.className = "fx";
-        img.style.setProperty("--rot", `${(-6 + Math.random()*12).toFixed(1)}deg`);
-        setSrcWithFallback(img, `reactionImage${which}`);
-
-        fxLayer.appendChild(img);
-
-        // Remove after animation completes (~3.1s)
-        setTimeout(() => img.remove(), 3300);
+        const fx = createLoadedImg(`reactionImage${which}`);
+        fx.className = "fx";
+        fx.style.setProperty("--rot", `${(-6 + Math.random()*12).toFixed(1)}deg`);
+        fxLayer.appendChild(fx);
+        setTimeout(() => fx.remove(), 3300);
       }
 
-      function showHappyTrio(){
-        const positions = [
-          { left:"32%", top:"44%", rot:"-10deg" },
-          { left:"50%", top:"38%", rot:"8deg" },
-          { left:"68%", top:"46%", rot:"-2deg" }
-        ];
-
-        for(let i=1;i<=3;i++){
-          const img = document.createElement("img");
-          img.className = "happy";
-          img.style.left = positions[i-1].left;
-          img.style.top  = positions[i-1].top;
-          img.style.setProperty("--rot", positions[i-1].rot);
-
-          // translate(-50%, -50%) is baked into animations; we keep it consistent:
-          img.style.transform = `translate(-50%, -50%) rotate(${positions[i-1].rot})`;
-
-          setSrcWithFallback(img, `happyImage${i}`);
-          fxLayer.appendChild(img);
-
-          setTimeout(() => img.remove(), 3300);
-        }
-      }
-
-      // ---------- Button behaviors ----------
-      let noClicks = 0;
-      let locked = false;
-
-      yesBtn.addEventListener("click", () => {
-        if(locked) return;
-        locked = true;
-
-        // Happy reactions
-        showHappyTrio();
-
-        // Replace center text
-        headline.innerHTML = "YAY 💞<br>Happy Valentine’s Day";
-        yesBtn.style.display = "none";
-        noBtn.style.display = "none";
-      });
-
-      // No button dodges hover/touch, but if she actually clicks it, show reactions
       function dodgeNo(){
         const r = stage.getBoundingClientRect();
         const pad = 18;
@@ -409,19 +374,67 @@
         noBtn.style.transform = "none";
       }
 
-      noBtn.addEventListener("mouseenter", dodgeNo);
+      // ONLY dodge after they've already clicked it at least once (or twice, per setting)
+      noBtn.addEventListener("mouseenter", () => {
+        if(noClicks >= startDodgingAfterClicks) dodgeNo();
+      });
       noBtn.addEventListener("pointerdown", (e) => {
-        // Dodge on touch attempts too
-        e.preventDefault();
-        dodgeNo();
+        if(noClicks >= startDodgingAfterClicks){
+          e.preventDefault();
+          dodgeNo();
+        }
       });
 
-      // If she manages to click "No" anyway: cycle reactionImage1..3 for 3 seconds each
       noBtn.addEventListener("click", () => {
-        if(locked) return;
         noClicks++;
         const which = ((noClicks - 1) % 3) + 1;
         showNoReaction(which);
+      });
+
+      // ---------- YES behavior ----------
+      // You said: 3 happy images appear at once, but NOT as a collage.
+      // Instead: random spots around the screen, spin, big, then fade.
+      function rand(min, max){ return min + Math.random() * (max - min); }
+
+      function showHappyTrioRandom(){
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+
+        for(let i=1;i<=3;i++){
+          const happy = createLoadedImg(`happyImage${i}`);
+          happy.className = "happy";
+
+          // random position, keep within bounds
+          const x = rand(18, 82); // percent
+          const y = rand(18, 82); // percent
+          happy.style.left = `${x}%`;
+          happy.style.top  = `${y}%`;
+
+          // random rotation and a little size variation
+          const rot = rand(-18, 18).toFixed(1) + "deg";
+          happy.style.setProperty("--rot", rot);
+
+          // random size scaling via CSS transform baseline baked into animations;
+          // easiest is to vary width:
+          const base = Math.min(w, h);
+          const px = Math.max(220, Math.min(420, base * rand(0.28, 0.42)));
+          happy.style.width = `${px}px`;
+
+          fxLayer.appendChild(happy);
+          setTimeout(() => happy.remove(), 3300);
+        }
+      }
+
+      let locked = false;
+      yesBtn.addEventListener("click", () => {
+        if(locked) return;
+        locked = true;
+
+        showHappyTrioRandom();
+
+        headline.innerHTML = "YAY 💞<br>Happy Valentine’s Day";
+        yesBtn.style.display = "none";
+        noBtn.style.display = "none";
       });
 
     })();
