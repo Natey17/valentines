@@ -12,6 +12,15 @@
       --textDark:#1a1a22;
     }
 
+    .pink-you{
+      color:#ff9bbd;   /* light pink */
+    }
+
+    .pink-valentine{
+      color:#ff3b86;   /* hot pink */
+    }
+
+
     body{
       margin:0;
       min-height:100vh;
@@ -195,9 +204,10 @@
   <main class="card">
     <div class="heart-stage" id="stage">
       <div class="headline" id="headline">
-        Will you be<br>
-        my valentine?
+        Will <span class="pink-you">you</span> be<br>
+        my <span class="pink-valentine">valentine</span>?
       </div>
+
 
       <button class="btn" id="yesBtn">Yes 💗</button>
       <button class="btn" id="noBtn">No 🙃</button>
@@ -451,7 +461,7 @@
 
         showHappyTrioRandom();
 
-        headline.innerHTML = "YAY 💞<br>Happy Valentine’s Day";
+        headline.innerHTML = "YAYAYAY<br>YAYAYAYAY";
         yesBtn.style.display = "none";
         noBtn.style.display = "none";
       });
